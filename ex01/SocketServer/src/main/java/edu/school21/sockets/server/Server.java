@@ -50,6 +50,10 @@ public class Server {
             printer.println( "Enter username:");
             handleRegistration();
         }
+        else if (message.equalsIgnoreCase("signin")){
+            printer.println("Enter username:");
+            handleSignIn();
+        }
         else{
             printer.println("Unknown command");
         }
@@ -87,6 +91,27 @@ public class Server {
         }
         User user = usersService.createNewUser(name, password);
         usersService.saveUser(user);
+        stopConnection();
+    }
+
+    private void handleSignIn() throws IOException{
+        String message;
+
+        if (!reader.hasNextLine() || usersService.findAll().isEmpty()){
+            printer.println("No users registered");
+            stopConnection();
+            return;
+        }
+        message = reader.nextLine();
+        if (usersService.findUserByName(message.trim()).isPresent() && reader.hasNextLine()){
+            User user = usersService.findUserByName(message.trim()).get();
+            printer.println("Enter password:");
+            message = reader.nextLine();
+            if (usersService.getPasswordEncoder().encode(message).equals(user.getPassword())){
+                return;
+            }
+        }
+        printer.println("Wrong password");
         stopConnection();
     }
 }
